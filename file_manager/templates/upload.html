@@ -1,0 +1,13 @@
+<html>
+    <head>
+        <title>Upload new file</title>
+    </head>
+    <body>
+        <h1>Upload new file</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form }}
+            <button type="submit">upload</button>
+        </form>
+    </body>
+</html>

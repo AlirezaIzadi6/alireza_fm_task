@@ -19,3 +19,6 @@ class MediaFile(models.Model):
     update_date = models.DateTimeField(auto_now=True)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE)
     creator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING)
+
+class UploadModel(models.Model):
+    file = models.FileField(upload_to='uploads/', max_length=1048576)
