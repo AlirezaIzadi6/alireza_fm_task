@@ -3,7 +3,7 @@ import re
 from django import forms
 
 from file_manager.models import UploadModel
-from file_manager.utils.file_validator import upload_path_is_valid
+from file_manager.utils.file_validator import validate_upload_path
 
 def validate_file_size(value):
     size_limit = 10*1024*1024
@@ -12,8 +12,8 @@ def validate_file_size(value):
 
 def validate_file_name(value):
     filename = value.name
-    valid_file_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
-    if re.match(valid_file_name_regex, filename) is None:
+    invalid_file_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
+    if re.match(invalid_file_name_regex, filename) is None:
         raise forms.ValidationError('Not allowed characters in file name')
     if len(filename) > 255:
         raise forms.ValidationError('Maximum file name length exceded')
@@ -29,12 +29,12 @@ class UploadForm(forms.Form):
         super().__init__(*args, **kwargs)
     
     file = forms.FileField(validators=[validate_file_size, validate_file_name, validate_file_type])
-    upload_path = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}), max_length=4000)
+    upload_path = forms.CharField(widget=forms.TextInput(attrs={'readonly': 'readonly'}), max_length=4000, required=False)
 
     def clean(self):
         cleaned_data = super().clean()
         file = cleaned_data.get('file')
         upload_path = cleaned_data.get('upload_path')
         if file is not None:
-            upload_path_is_valid(file, upload_path, self.username)
+            validate_upload_path(file.name, upload_path, self.username)
         return cleaned_data

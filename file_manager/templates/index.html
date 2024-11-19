@@ -1,11 +1,34 @@
 <html>
     <head>
-        <title>Home page</title>
+        <title>{{ current_folder }}</title>
     </head>
     <body>
         <h1>Welcome {{ user }}</h1>
-        <p>This is my home page</p>
         <p>To logout, <a href="{% url 'logout' %}">click here</a></p>
-        <p><a href="{% url 'upload' %}">Upload new file</a></p>
+        {% if current_folder != 'index' %}
+        <p><a href="{% url 'index' %}{{ parent_folder }}">Go to parent folder</a></p>
+        {% endif %}
+        <table>
+            <tr>
+                <th>name</th>
+                <th>size</th>
+                <th>type</th>
+                <th>created at</th>
+                <th>updated at</th>
+            </tr>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.size }}</td>
+                <td>{{ item.type }}</td>
+                <td>{{ item.create_date }}</td>
+                <td>{{ item.update_date }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <p>
+            <a href="{% url 'upload' %}">Upload new file</a> | 
+            <a href="{% url 'create_folder' %}">Create new folder</a>
+        </p>
     </body>
 </html>

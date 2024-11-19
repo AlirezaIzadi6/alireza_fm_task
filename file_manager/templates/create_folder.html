@@ -1,0 +1,13 @@
+<html>
+    <head>
+        <title>Create new folder</title>
+    </head>
+    <body>
+        <h1>Create new folder</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form }}
+            <button type="submit">create</button>
+        </form>
+    </body>
+</html>
