@@ -21,4 +21,5 @@ class MediaFile(models.Model):
     creator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING)
 
 class UploadModel(models.Model):
-    file = models.FileField(upload_to='uploads/', max_length=1048576)
+    file = models.FileField()
+    upload_path = models.CharField(max_length=255)

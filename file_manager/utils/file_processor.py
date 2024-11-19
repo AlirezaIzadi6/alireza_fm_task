@@ -1,7 +1,8 @@
 import os
 
-def file_processor(file):
+def save_file(file, upload_path, username):
     name = file.name
-    with open('uploads\\'+name, 'wb+') as destination:
+    save_path = f"uploads/{username}{upload_path}/{name}"
+    with open(save_path, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
