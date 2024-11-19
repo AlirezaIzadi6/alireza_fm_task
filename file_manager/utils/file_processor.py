@@ -8,5 +8,9 @@ def save_file(file, upload_path, username):
             destination.write(chunk)
 
 def create_directory(name, path, username):
-    destination_path = f'uploads/{username}/{path}{name}'
+    destination_path = f'uploads/{username}/{path}/{name}'
     os.mkdir(destination_path)
+
+def verify_user_directory_existance(username):
+    if not os.path.isdir(f'uploads/{username}'):
+        os.mkdir(f'uploads/{username}')

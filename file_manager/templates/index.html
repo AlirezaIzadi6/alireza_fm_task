@@ -27,8 +27,8 @@
             {% endfor %}
         </table>
         <p>
-            <a href="{% url 'upload' %}">Upload new file</a> | 
-            <a href="{% url 'create_folder' %}">Create new folder</a>
+            <a href="{% url 'upload' %}{% if current_path != '' %}?upload_path={{ current_path }}{% endif %}">Upload new file</a> | 
+            <a href="{% url 'create_folder' %}{% if path != '' %}?upload_path={{ current_path }}{% endif %}">Create new folder</a>
         </p>
     </body>
 </html>
