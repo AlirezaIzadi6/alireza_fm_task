@@ -1,0 +1,30 @@
+services:
+  pg_db:
+    image: hub.hamdocker.ir/postgres:15-alpine
+    container_name: pg_db
+    volumes:
+      - db_data:/var/lib/postgresql/db_data
+    networks:
+      - network1
+    environment:
+      - POSTGRES_DB=filemanagerdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=test123
+
+  backend:
+    build: .
+    volumes:
+      - ./uploads:/uploads
+    networks:
+      - network1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - pg_db
+
+volumes:
+  db_data:
+
+networks:
+  network1:
+    driver: bridge

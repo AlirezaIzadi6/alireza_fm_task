@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'filemanagerdb',
         'USER': 'postgres',
         'PASSWORD': 'test123',
-        'HOST': 'localhost',
+        'HOST': 'pg_db',
         'PORT': '5432',
     }
 }
