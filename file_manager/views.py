@@ -2,10 +2,12 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 
+from file_manager.data_access.folder import get_folder_by_path
 from file_manager.forms.upload import UploadForm
 from file_manager.forms.create_folder import CreateFolderForm
 from file_manager.utils.file_validator import path_is_valid
 from file_manager.utils.file_processor import save_file, create_directory, verify_user_directory_existance
+from file_manager.utils.extract_upper_paths import extract_upper_folders
 from file_manager.models import Folder, MediaFile
 
 @login_required
@@ -22,8 +24,13 @@ def index(request, path=''):
         resource_path = path.replace(f'/{resource_name}', '')
     folders = Folder.objects.filter(path=path)
     files = MediaFile.objects.filter(path=path)
+    if path != '':
+        current_folder = Folder.objects.get(path=resource_path, name=resource_name)
+    else:
+        current_folder = None
+    upper_folders = extract_upper_folders(current_folder)
     data = list(folders) + list(files)
-    context = {'current_path': path, 'current_folder': resource_name, 'parent_folder': resource_path, 'data': data}
+    context = {'current_path': path, 'current_folder': resource_name, 'parent_folder': resource_path, 'data': data, 'upper_folders': upper_folders}
     return render(request, 'index.html', context)
 
 @login_required
@@ -34,6 +41,7 @@ def upload(request):
         if form.is_valid():
             file = request.FILES['file']
             upload_path = request.POST.get('upload_path')
+            parent_folder = get_folder_by_path(upload_path, request.user)
             username = request.user.username
             file_type = file.content_type.split('/')[0]
             save_file(file, upload_path, username)
@@ -42,10 +50,10 @@ def upload(request):
                 path=upload_path,
                 type=file_type,
                 size=file.size,
-                folder=None,
+                parent_folder=parent_folder,
                 creator=request.user,
             )
-            if upload_path is '':
+            if upload_path == '':
                 return redirect('index')
             return redirect('index', path=upload_path)
     else:
@@ -62,15 +70,16 @@ def create_folder(request):
         if form.is_valid():
             folder_name = request.POST.get('name')
             upload_path = request.POST.get('upload_path')
+            parent_folder = get_folder_by_path(upload_path, request.user)
             username = request.user.username
             create_directory(folder_name, upload_path, username)
             Folder.objects.create(
                 name=folder_name,
                 path=upload_path,
-                parent_folder=None,
+                parent_folder=parent_folder,
                 creator=request.user,
             )
-            if upload_path is '':
+            if upload_path == '':
                 return redirect('index')
             return redirect('index', path=upload_path)
     else:

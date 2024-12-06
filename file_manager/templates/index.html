@@ -6,7 +6,15 @@
         <h1>Welcome {{ user }}</h1>
         <p>To logout, <a href="{% url 'logout' %}">click here</a></p>
         {% if current_folder != 'index' %}
-        <p><a href="{% url 'index' %}{{ parent_folder }}">Go to parent folder</a></p>
+        <p>
+            root/
+            {% for folder in upper_folders %}
+            {{ folder.name }}/
+            {% endfor %}
+            {{ current_folder }}
+        </p>
+        {% else %}
+        root
         {% endif %}
         <table>
             <tr>

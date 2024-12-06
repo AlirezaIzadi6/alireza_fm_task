@@ -17,7 +17,7 @@ class MediaFile(models.Model):
     size = models.IntegerField()
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
-    folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
+    parent_folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
     creator = models.ForeignKey(CustomUser, on_delete=models.DO_NOTHING)
 
 class UploadModel(models.Model):
