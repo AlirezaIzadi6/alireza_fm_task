@@ -5,17 +5,18 @@
     <body>
         <h1>Welcome {{ user }}</h1>
         <p>To logout, <a href="{% url 'logout' %}">click here</a></p>
-        {% if current_folder != 'index' %}
         <p>
-            root/
+            You are on 
+            {% if current_folder != 'index' %}
+            <a href="{% url 'index' %}">root</a>/
             {% for folder in upper_folders %}
-            {{ folder.name }}/
+            <a href="{% url 'index' %}{% if folder.path != '' %}{{ folder.path }}/{% endif %}{{ folder.name }}">{{ folder.name }}</a>/
             {% endfor %}
             {{ current_folder }}
+            {% else %}
+            root
+            {% endif %}
         </p>
-        {% else %}
-        root
-        {% endif %}
         <table>
             <tr>
                 <th>name</th>
