@@ -27,7 +27,7 @@
             </tr>
             {% for item in data %}
             <tr>
-                <td>{{ item.name }}</td>
+                <td><a href="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}">{{ item.name }}</a></td>
                 <td>{{ item.size }}</td>
                 <td>{{ item.type }}</td>
                 <td>{{ item.create_date }}</td>

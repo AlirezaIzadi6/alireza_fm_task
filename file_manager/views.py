@@ -7,30 +7,24 @@ from file_manager.forms.upload import UploadForm
 from file_manager.forms.create_folder import CreateFolderForm
 from file_manager.utils.file_validator import path_is_valid
 from file_manager.utils.file_processor import save_file, create_directory, verify_user_directory_existance
-from file_manager.utils.extract_upper_paths import extract_upper_folders
+from file_manager.utils.path import extract_upper_folders
 from file_manager.models import Folder, MediaFile
+from file_manager.mappers.path import Resource
 
 @login_required
 def index(request, path=''):
     if not path_is_valid(path):
         return redirect('index')
-    resource_name = path.split('/')[-1]
-    if resource_name == '':
-        resource_name = 'index'
-        resource_path = ''
-    elif path == resource_name:
-        resource_path = ''
-    else:
-        resource_path = path.replace(f'/{resource_name}', '')
-    folders = Folder.objects.filter(path=path)
-    files = MediaFile.objects.filter(path=path)
+    resource = Resource(path)
+    folders = Folder.objects.filter(path=path, creator=request.user)
+    files = MediaFile.objects.filter(path=path, creator=request.user)
     if path != '':
-        current_folder = Folder.objects.get(path=resource_path, name=resource_name)
+        current_folder = Folder.objects.get(path=resource.path, name=resource.name)
     else:
         current_folder = None
     upper_folders = extract_upper_folders(current_folder)
     data = list(folders) + list(files)
-    context = {'current_path': path, 'current_folder': resource_name, 'parent_folder': resource_path, 'data': data, 'upper_folders': upper_folders}
+    context = {'current_path': path, 'current_folder': resource.name, 'parent_folder': resource.path, 'data': data, 'upper_folders': upper_folders}
     return render(request, 'index.html', context)
 
 @login_required
