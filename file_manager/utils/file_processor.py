@@ -14,3 +14,12 @@ def create_directory(name, path, username):
 def verify_user_directory_existance(username):
     if not os.path.isdir(f'uploads/{username}'):
         os.mkdir(f'uploads/{username}')
+
+def read_file(path, username):
+    path_parts = ['uploads', username, path]
+    complete_path = '/'.join(path_parts)
+    if not os.path.isfile(complete_path):
+        return None
+    with open(complete_path, 'rb') as f:
+        file_content = f.read()
+        return file_content

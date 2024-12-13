@@ -1,12 +1,14 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from file_manager.data_access.folder import get_folder_by_path
+from file_manager.data_access.file_or_folder import get_file_or_folder
 from file_manager.forms.upload import UploadForm
 from file_manager.forms.create_folder import CreateFolderForm
 from file_manager.utils.file_validator import path_is_valid
-from file_manager.utils.file_processor import save_file, create_directory, verify_user_directory_existance
+from file_manager.utils.file_processor import save_file, create_directory, verify_user_directory_existance, read_file
 from file_manager.utils.path import extract_upper_folders
 from file_manager.models import Folder, MediaFile
 from file_manager.mappers.path import Resource
@@ -16,16 +18,25 @@ def index(request, path=''):
     if not path_is_valid(path):
         return redirect('index')
     resource = Resource(path)
-    folders = Folder.objects.filter(path=path, creator=request.user)
-    files = MediaFile.objects.filter(path=path, creator=request.user)
-    if path != '':
-        current_folder = Folder.objects.get(path=resource.path, name=resource.name)
+    file_or_folder = get_file_or_folder(resource)
+    if path == '' or file_or_folder.resource_type == 'folder':
+        if path == '':
+            current_folder = None
+        else:
+            current_folder = file_or_folder.resource
+        folders = Folder.objects.filter(path=path, creator=request.user)
+        files = MediaFile.objects.filter(path=path, creator=request.user)
+        upper_folders = extract_upper_folders(current_folder)
+        data = list(folders) + list(files)
+        context = {'current_path': path, 'current_folder': resource.name, 'parent_folder': resource.path, 'data': data, 'upper_folders': upper_folders}
+        return render(request, 'index.html', context)
+    elif file_or_folder.resource_type == 'file':
+        file_content = read_file(path, request.user.username)
+        response = HttpResponse(file_content, content_type=file_or_folder.resource.type)
+        response['content-disposition'] = f'attachment; filename="{resource.name}"'
+        return response
     else:
-        current_folder = None
-    upper_folders = extract_upper_folders(current_folder)
-    data = list(folders) + list(files)
-    context = {'current_path': path, 'current_folder': resource.name, 'parent_folder': resource.path, 'data': data, 'upper_folders': upper_folders}
-    return render(request, 'index.html', context)
+        return redirect('index')
 
 @login_required
 def upload(request):
