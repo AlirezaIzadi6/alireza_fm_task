@@ -1,22 +1,27 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
         <title>{{ current_folder }}</title>
+        <meta charset="utf-8"
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     </head>
     <body>
         <h1>Welcome {{ user }}</h1>
         <p>To logout, <a href="{% url 'logout' %}">click here</a></p>
-        <p>
-            You are on 
+        <ul class="breadcrumb">
             {% if current_folder != 'index' %}
-            <a href="{% url 'index' %}">root</a>/
+            <li><a href="{% url 'index' %}">root</a></li>
             {% for folder in upper_folders %}
-            <a href="{% url 'index' %}{% if folder.path != '' %}{{ folder.path }}/{% endif %}{{ folder.name }}">{{ folder.name }}</a>/
+            <li><a href="{% url 'index' %}{% if folder.path != '' %}{{ folder.path }}/{% endif %}{{ folder.name }}">{{ folder.name }}</a></li>
             {% endfor %}
-            {{ current_folder }}
+            <li class="active">{{ current_folder }}</li>
             {% else %}
-            root
+            <li class="active">root</li>
             {% endif %}
-        </p>
+        </ul>
         <table>
             <tr>
                 <th>name</th>
