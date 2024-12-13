@@ -9,7 +9,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     </head>
     <body>
-        <h1>Welcome {{ user }}</h1>
+        <h1>Welcome {{ user.username }}</h1>
         <p>To logout, <a href="{% url 'logout' %}">click here</a></p>
         <ul class="breadcrumb">
             {% if current_folder != 'index' %}
