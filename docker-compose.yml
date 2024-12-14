@@ -15,6 +15,7 @@ services:
     build: .
     volumes:
       - ./uploads:/uploads
+      - ./thumbnails:/thumbnails
     networks:
       - network1
     ports:

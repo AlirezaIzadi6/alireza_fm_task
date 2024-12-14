@@ -8,7 +8,8 @@ from file_manager.data_access.file_or_folder import get_file_or_folder
 from file_manager.forms.upload import UploadForm
 from file_manager.forms.create_folder import CreateFolderForm
 from file_manager.utils.file_validator import path_is_valid
-from file_manager.utils.file_processor import save_file, create_directory, verify_user_directory_existance, read_file
+from file_manager.utils.file_processor import save_file, create_directory, verify_directory_existance, read_file
+from file_manager.utils.image_processor import create_image_thumbnail
 from file_manager.utils.path import extract_upper_folders
 from file_manager.models import Folder, MediaFile
 from file_manager.mappers.path import Resource
@@ -41,7 +42,7 @@ def index(request, path=''):
 @login_required
 def upload(request):
     if request.method == 'POST':
-        verify_user_directory_existance(request.user.username)
+        verify_directory_existance(['uploads', request.user.username])
         form = UploadForm(request.POST, request.FILES, username=request.user.username)
         if form.is_valid():
             file = request.FILES['file']
@@ -50,6 +51,7 @@ def upload(request):
             username = request.user.username
             file_type = file.content_type.split('/')[0]
             save_file(file, upload_path, username)
+            create_image_thumbnail(file.name, upload_path, username)
             MediaFile.objects.create(
                 name=file.name,
                 path=upload_path,
@@ -70,7 +72,7 @@ def upload(request):
 @login_required
 def create_folder(request):
     if request.method == 'POST':
-        verify_user_directory_existance(request.user.username)
+        verify_directory_existance(['uploads', request.user.username])
         form = CreateFolderForm(request.POST, username=request.user.username)
         if form.is_valid():
             folder_name = request.POST.get('name')
