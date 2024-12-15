@@ -23,8 +23,12 @@ from file_manager.utils.path import extract_upper_folders, get_directory_path, g
 def index(request, path=''):
     is_thumbnail_request = request.GET.get('thumbnail', False)
     if is_thumbnail_request:
-        resource = Resource(path)
-        file_path = get_file_path('thumbnails', request.user.username, resource.path, resource.name)
+        is_folder_thumbnail_request = request.GET.get('for_folder', False)
+        if is_folder_thumbnail_request:
+            file_path = 'file_manager/static_files/folder.jpg'
+        else:
+            resource = Resource(path)
+            file_path = get_file_path('thumbnails', request.user.username, resource.path, resource.name)
         file_content = read_file(file_path)
         if file_content is None:
             return HttpResponseNotFound('Not found')

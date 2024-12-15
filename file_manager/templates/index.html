@@ -24,6 +24,7 @@
         </ul>
         <table>
             <tr>
+                <th>thumbnail</th>
                 <th>name</th>
                 <th>size</th>
                 <th>type</th>
@@ -32,6 +33,8 @@
             </tr>
             {% for item in data %}
             <tr>
+                <td>
+                    <img src="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}.jpg?thumbnail=true{% if item.type == None %}&for_folder=true{% endif %}" alt="thumbnail"></td>
                 <td><a href="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}">{{ item.name }}</a></td>
                 <td>{{ item.size }}</td>
                 <td>{{ item.type }}</td>
