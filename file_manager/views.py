@@ -9,13 +9,19 @@ from file_manager.forms.upload import UploadForm
 from file_manager.forms.create_folder import CreateFolderForm
 from file_manager.utils.file_validator import path_is_valid
 from file_manager.utils.file_processor import save_file, create_directory, verify_directory_existance, read_file
-from file_manager.utils.image_processor import create_image_thumbnail
+from file_manager.utils.image_processor import create_image_thumbnail, create_video_thumbnail
 from file_manager.utils.path import extract_upper_folders
 from file_manager.models import Folder, MediaFile
 from file_manager.mappers.path import Resource
 
 @login_required
 def index(request, path=''):
+    is_thumbnail_request = request.GET.get('thumbnail', False)
+    if is_thumbnail_request:
+        file_content = read_file('thumbnails', path, request.user.username)
+        resource = Resource(path)
+        response = HttpResponse(file_content, content_type='image/jpeg')
+        return response
     if not path_is_valid(path):
         return redirect('index')
     resource = Resource(path)
@@ -32,9 +38,8 @@ def index(request, path=''):
         context = {'current_path': path, 'current_folder': resource.name, 'parent_folder': resource.path, 'data': data, 'upper_folders': upper_folders}
         return render(request, 'index.html', context)
     elif file_or_folder.resource_type == 'file':
-        file_content = read_file(path, request.user.username)
+        file_content = read_file('uploads', path, request.user.username)
         response = HttpResponse(file_content, content_type=file_or_folder.resource.type)
-        response['content-disposition'] = f'attachment; filename="{resource.name}"'
         return response
     else:
         return redirect('index')
@@ -51,11 +56,14 @@ def upload(request):
             username = request.user.username
             file_type = file.content_type.split('/')[0]
             save_file(file, upload_path, username)
-            create_image_thumbnail(file.name, upload_path, username)
+            if file_type == 'image':
+                create_image_thumbnail(file.name, upload_path, username)
+            else:
+                create_video_thumbnail(file.name, upload_path, username)
             MediaFile.objects.create(
                 name=file.name,
                 path=upload_path,
-                type=file_type,
+                type=file.content_type,
                 size=file.size,
                 parent_folder=parent_folder,
                 creator=request.user,

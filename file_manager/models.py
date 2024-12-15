@@ -13,7 +13,7 @@ class Folder(models.Model):
 class MediaFile(models.Model):
     name = models.CharField(max_length=100)
     path = models.CharField(max_length=255)
-    type = models.CharField(max_length=5)
+    type = models.CharField(max_length=50)
     size = models.IntegerField()
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)

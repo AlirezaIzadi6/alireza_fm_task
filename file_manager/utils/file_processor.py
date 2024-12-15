@@ -16,8 +16,8 @@ def verify_directory_existance(path_parts):
     complete_path = '/'.join(path_parts)
     Path(complete_path).mkdir(parents=True, exist_ok=True)
 
-def read_file(path, username):
-    path_parts = ['uploads', username, path]
+def read_file(mode, path, username):
+    path_parts = [mode, username, path]
     complete_path = '/'.join(path_parts)
     if not os.path.isfile(complete_path):
         return None
