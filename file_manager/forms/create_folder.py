@@ -3,6 +3,7 @@ import re
 from django import forms
 
 from file_manager.utils.file_validator import validate_upload_path
+from file_manager.utils.path import get_directory_path
 
 def validate_folder_name(value):
     invalid_folder_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
@@ -23,5 +24,6 @@ class CreateFolderForm(forms.Form):
         cleaned_data = super().clean()
         folder_name = cleaned_data.get('name')
         upload_path = cleaned_data.get('upload_path')
-        validate_upload_path(folder_name, upload_path, self.username)
+        path = get_directory_path('uploads', self.username, upload_path)
+        validate_upload_path(folder_name, path)
         return cleaned_data

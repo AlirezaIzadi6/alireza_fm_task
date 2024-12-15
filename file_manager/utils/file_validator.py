@@ -2,13 +2,9 @@ import os
 import re
 from django import forms
 
-def validate_upload_path(name, path, username):
-    if path == '':
-        destination_path = f'uploads/{username}'
-    else:
-        destination_path = f'uploads/{username}/{path}'
-    created_path = f'{destination_path}/{name}'
-    if not os.path.isdir(destination_path):
+def validate_upload_path(name, path):
+    created_path = f'{path}/{name}'
+    if not os.path.isdir(path):
         raise forms.ValidationError('Requested upload path doesnt exist')
     if os.path.isfile(created_path) or os.path.isdir(created_path):
         raise forms.ValidationError('Duplicate name')

@@ -1,26 +1,20 @@
 import os
 from pathlib import Path
 
-def save_file(file, upload_path, username):
-    name = file.name
-    save_path = f"uploads/{username}/{upload_path}/{name}"
-    with open(save_path, 'wb+') as destination:
+def save_file(file, path):
+    with open(path+'/'+file.name, 'wb+') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
 
-def create_directory(name, path, username):
-    destination_path = f'uploads/{username}/{path}/{name}'
-    os.mkdir(destination_path)
+def create_directory(path):
+    os.mkdir(path)
 
-def verify_directory_existance(path_parts):
-    complete_path = '/'.join(path_parts)
-    Path(complete_path).mkdir(parents=True, exist_ok=True)
+def verify_directory_existance(path):
+    Path(path).mkdir(parents=True, exist_ok=True)
 
-def read_file(mode, path, username):
-    path_parts = [mode, username, path]
-    complete_path = '/'.join(path_parts)
-    if not os.path.isfile(complete_path):
+def read_file(path):
+    if not os.path.isfile(path):
         return None
-    with open(complete_path, 'rb') as f:
+    with open(path, 'rb') as f:
         file_content = f.read()
         return file_content

@@ -1,9 +1,13 @@
 import os
 import re
+import uuid
 from django import forms
 
 from file_manager.models import UploadModel
+from file_manager.utils.file_processor import save_file, verify_directory_existance
 from file_manager.utils.file_validator import validate_upload_path
+from file_manager.utils.image_processor import is_valid_image, is_valid_video
+from file_manager.utils.path import get_directory_path
 
 def validate_file_size(value):
     size_limit = 10*1024*1024
@@ -19,9 +23,18 @@ def validate_file_name(value):
         raise forms.ValidationError('Maximum file name length exceded')
 
 def validate_file_type(value):
-    type = value.content_type
+    type = value.content_type.split('/')[0]
     if 'video' not in type and 'image' not in type:
         raise forms.ValidationError('File must be an image or a video')
+    temp_folder = str(uuid.uuid4())
+    temp_path = f'temp/{temp_folder}'
+    verify_directory_existance(temp_path)
+    save_file(value, temp_path)
+    file_path = temp_path+'/'+value.name
+    if type == 'image' and not is_valid_image(file_path):
+        raise forms.ValidationError('Image file is invalid')
+    if type == 'video' and not is_valid_video(file_path):
+        raise forms.ValidationError('Video file is invalid')
 
 class UploadForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -36,5 +49,6 @@ class UploadForm(forms.Form):
         file = cleaned_data.get('file')
         upload_path = cleaned_data.get('upload_path')
         if file is not None:
-            validate_upload_path(file.name, upload_path, self.username)
+            path = get_directory_path('uploads', self.username, upload_path)
+            validate_upload_path(file.name, path)
         return cleaned_data
