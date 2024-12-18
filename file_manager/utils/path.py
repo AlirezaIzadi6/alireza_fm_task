@@ -15,7 +15,7 @@ def get_directory_path(mode, username, path):
     if path == '':
         return '/'.join([mode, username])
     else:
-        '/'.join([mode, username, path])
+        return '/'.join([mode, username, path])
 
 def get_file_path(mode, username, path, name):
     if path == '':

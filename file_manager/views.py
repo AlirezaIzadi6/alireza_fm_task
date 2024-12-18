@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 
 # data access:
@@ -16,6 +16,7 @@ from file_manager.models import Folder, MediaFile
 #utils:
 from file_manager.utils.file_processor import save_file, create_directory, verify_directory_existance, read_file
 from file_manager.utils.file_validator import path_is_valid
+from file_manager.utils.formatting import format_folder_info, format_file_info
 from file_manager.utils.image_processor import create_image_thumbnail, create_video_thumbnail
 from file_manager.utils.path import extract_upper_folders, get_directory_path, get_file_path
 
@@ -38,6 +39,8 @@ def index(request, path=''):
         return redirect('index')
     resource = Resource(path)
     file_or_folder = get_file_or_folder(resource)
+    if path != '' and file_or_folder is None:
+        return redirect('index')
     if path == '' or file_or_folder.resource_type == 'folder':
         if path == '':
             current_folder = None
@@ -101,11 +104,11 @@ def create_folder(request):
         verify_directory_existance(user_folder)
         form = CreateFolderForm(request.POST, username=request.user.username)
         if form.is_valid():
-            folder_name = request.POST.get('name')
-            upload_path = request.POST.get('upload_path')
-            parent_folder = get_folder_by_path(upload_path, request.user)
+            folder_name = form.cleaned_data['name']
+            upload_path = form.cleaned_data['upload_path']
             username = request.user.username
-            folder_path = get_directory_path('uploads', username, upload_path)
+            parent_folder = get_folder_by_path(upload_path, request.user)
+            folder_path = get_directory_path('uploads', username, upload_path+'/'+folder_name)
             verify_directory_existance(folder_path)
             Folder.objects.create(
                 name=folder_name,
@@ -120,3 +123,32 @@ def create_folder(request):
         upload_path = request.GET.get('upload_path', '')
         form = CreateFolderForm(initial={'upload_path': upload_path})
     return render(request, 'create_folder.html', {'form': form})
+
+@login_required
+def delete_file(request):
+    requested_id = request.POST.get('id', None);
+
+
+@login_required
+def get_detail(request):
+    resource_id = request.GET.get('id', None)
+    resource_type = request.GET.get('type', None)
+    if resource_id is None or resource_type is None:
+        return HttpResponseBadRequest('Invalid request')
+    if resource_type not in ['folder', 'file']:
+        return HttpResponseBadRequest('Invalid request')
+    if not resource_id.isdigit():
+        return HttpResponseBadRequest('Invalid request')
+    resource_id = int(resource_id)
+    try:
+        if resource_type == 'folder':
+            folder = Folder.objects.get(id=resource_id, creator=request.user)
+            formatted_info = format_folder_info(folder)
+        elif resource_type == 'file':
+            file = MediaFile.objects.get(id=resource_id, creator=request.user)
+            formatted_info = format_file_info(file)
+        return HttpResponse(formatted_info)
+    except Folder.DoesNotExist:
+        return HttpResponseNotFound('Folder not found')
+    except MediaFile.DoesNotExist:
+        return HttpResponseNotFound('File not found')

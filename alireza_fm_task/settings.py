@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-*9eg8f7bpee91m1sl0%yk$cd6%l254@vn=hr_vo_@(an408_qo
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -138,3 +138,7 @@ AUTHENTICATION_BACKENDS = [
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+ERROR_TEMPLATES = {
+    500: '500.html',
+}

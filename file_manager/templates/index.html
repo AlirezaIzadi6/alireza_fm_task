@@ -34,8 +34,11 @@
             {% for item in data %}
             <tr>
                 <td>
-                    <img src="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}.jpg?thumbnail=true{% if item.type == None %}&for_folder=true{% endif %}" alt="thumbnail"></td>
-                <td><a href="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}">{{ item.name }}</a></td>
+                    <a href="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}">
+                        <img src="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}.jpg?thumbnail=true{% if item.type == None %}&for_folder=true{% endif %}" alt="thumbnail">
+                    </a>
+                </td>
+                <td><button data-toggle="modal" data-target="#infoModal" data-id="{{ item.id }}"" data-type="{% if item.type == None %}folder{% else %}file{% endif %}">{{ item.name }}</button></td>
                 <td>{{ item.size }}</td>
                 <td>{{ item.type }}</td>
                 <td>{{ item.create_date }}</td>
@@ -43,9 +46,47 @@
             </tr>
             {% endfor %}
         </table>
-        <p>
-            <a href="{% url 'upload' %}{% if current_path != '' %}?upload_path={{ current_path }}{% endif %}">Upload new file</a> | 
-            <a href="{% url 'create_folder' %}{% if path != '' %}?upload_path={{ current_path }}{% endif %}">Create new folder</a>
-        </p>
+        <div class="btn-group btn-group-justified">
+            <a href="{% url 'upload' %}{% if current_path != '' %}?upload_path={{ current_path }}{% endif %}" class="btn btn-primary" role="button">Upload new file</a>
+            <a href="{% url 'create_folder' %}{% if path != '' %}?upload_path={{ current_path }}{% endif %}" class="btn btn-primary" role="button">Create new folder</a>
+        </div>
+        <div id="infoModal" class="modal fade" tabindex="-1" aria-labelledby="Information dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                        <h4 id="modal-title" class="modal-title">info</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p id="modal-body">Some text in the modal.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function() {
+                $('#infoModal').on('show.bs.modal', function(event) {
+                    var clickedButton = $(event.relatedTarget);
+                    var resourceId = clickedButton.data('id');
+                    var resourceType = clickedButton.data('type');
+                    $.ajax({
+                        url: "{% url 'details' %}?id="+resourceId+"&type="+resourceType,
+                        dataType: "json",
+                        success: function(data) {
+                            $('#modal-body').text('');
+                            Object.keys(data).forEach(function(key) {
+                                var newP = document.createElement('p');
+                                newP.textContent = key+': '+data[key];
+                                $('#modal-body').append(newP);
+                            });
+                        }
+                    });
+                });
+            });
+        </script>
     </body>
 </html>
