@@ -30,6 +30,7 @@
                 <th>type</th>
                 <th>created at</th>
                 <th>updated at</th>
+                <th>Actions</th>
             </tr>
             {% for item in data %}
             <tr>
@@ -38,11 +39,14 @@
                         <img src="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}.jpg?thumbnail=true{% if item.type == None %}&for_folder=true{% endif %}" alt="thumbnail">
                     </a>
                 </td>
-                <td><button data-toggle="modal" data-target="#infoModal" data-id="{{ item.id }}"" data-type="{% if item.type == None %}folder{% else %}file{% endif %}">{{ item.name }}</button></td>
+                <td><button data-toggle="modal" data-target="#infoModal" data-id="{{ item.id }}" data-type="{% if item.type == None %}folder{% else %}file{% endif %}">{{ item.name }}</button></td>
                 <td>{{ item.size }}</td>
                 <td>{{ item.type }}</td>
                 <td>{{ item.create_date }}</td>
                 <td>{{ item.update_date }}</td>
+                <td>
+                    <button class="action-delete" data-id="{{ item.id }}" data-type="{{ item.resource_type }}">Delete</button></button>
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -86,6 +90,33 @@
                         }
                     });
                 });
+
+                $('.action-delete').on('click', function(event) {
+                    var clickedButton = $(this);
+                    var resourceId = clickedButton.data('id');
+                    var resourceType = clickedButton.data('type');
+                    var isConfirmed = confirm(`Are you sure to delete this ${resourceType}?`);
+                    if (!isConfirmed) {
+                        return;
+                    }
+                    var requestUrl = '';
+                    if (resourceType == 'folder') {
+                        requestUrl = "{% url 'delete_folder' %}";
+                    } else {
+                        requestUrl = "{% url 'delete_file' %}";
+                    }
+                    $.ajax({
+                        type: "post",
+                        url: requestUrl,
+                        data: {'id': resourceId, csrfmiddlewaretoken: "{{ csrf_token }}"},
+                        success: function(data) {
+                            window.location.href = "{% if current_path == '' %}{% url 'index' %}{% else %}{% url 'index' path=current_path %}{% endif %}";
+                        },
+                        error: function(data) {
+                            alert("An error occurred.");
+                        }
+                    });
+                })
             });
         </script>
     </body>

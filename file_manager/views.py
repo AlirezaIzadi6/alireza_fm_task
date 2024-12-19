@@ -14,7 +14,7 @@ from file_manager.mappers.path import Resource
 # models:
 from file_manager.models import Folder, MediaFile
 #utils:
-from file_manager.utils.file_processor import save_file, create_directory, verify_directory_existance, read_file
+from file_manager.utils.file_processor import *
 from file_manager.utils.file_validator import path_is_valid
 from file_manager.utils.formatting import format_folder_info, format_file_info
 from file_manager.utils.image_processor import create_image_thumbnail, create_video_thumbnail
@@ -49,7 +49,29 @@ def index(request, path=''):
         folders = Folder.objects.filter(path=path, creator=request.user)
         files = MediaFile.objects.filter(path=path, creator=request.user)
         upper_folders = extract_upper_folders(current_folder)
-        data = list(folders) + list(files)
+        data = []
+        for f in folders:
+            new_item = {
+                'id': f.id,
+                'name': f.name,
+                'path': f.path,
+                'create_date': f.create_date,
+                'update_date': f.update_date,
+                'resource_type': 'folder',
+            }
+            data.append(new_item)
+        for f in files:
+            new_item = {
+                'id': f.id,
+                'name': f.name,
+                'path': f.path,
+                'type': f.type,
+                'size': f.size,
+                'create_date': f.create_date,
+                'update_date': f.update_date,
+                'resource_type': 'file',
+            }
+            data.append(new_item)
         context = {'current_path': path, 'current_folder': resource.name, 'parent_folder': resource.path, 'data': data, 'upper_folders': upper_folders}
         return render(request, 'index.html', context)
     elif file_or_folder.resource_type == 'file':
@@ -125,9 +147,38 @@ def create_folder(request):
     return render(request, 'create_folder.html', {'form': form})
 
 @login_required
-def delete_file(request):
-    requested_id = request.POST.get('id', None);
+def delete_folder_view(request):
+    request_id = request.POST.get('id', None);
+    if request_id is None or not request_id.isdigit():
+        return HttpResponseBadRequest('Invalid ID')
+    folder_id = int(request_id)
+    try:
+        folder_object = Folder.objects.get(id=folder_id, creator=request.user)
+        folder_path = get_directory_path('uploads', request.user.username, folder_object.path+'/'+folder_object.name)
+        thumbnail_path = get_directory_path('thumbnails', request.user.username, folder_object.path+'/'+folder_object.name)
+        folder_object.delete()
+        delete_folder(folder_path)
+        delete_folder(thumbnail_path)
+        return HttpResponse({})
+    except Folder.DoesNotExist:
+        return HttpResponseNotFound('Folder not found or not accessible')
 
+@login_required
+def delete_file_view(request):
+    request_id = request.POST.get('id', None);
+    if request_id is None or not request_id.isdigit():
+        return HttpResponseBadRequest('Invalid ID')
+    file_id = int(request_id)
+    try:
+        file_object = MediaFile.objects.get(id=file_id, creator=request.user)
+        file_path = get_file_path('uploads', request.user.username, file_object.path, file_object.name)
+        thumbnail_path = get_file_path('thumbnails', request.user.username, file_object.path, file_object.name+'.jpg')
+        file_object.delete()
+        delete_file(file_path)
+        delete_file(thumbnail_path)
+        return HttpResponse({})
+    except MediaFile.DoesNotExist:
+        return HttpResponseNotFound('File not found or not accessible')
 
 @login_required
 def get_detail(request):
