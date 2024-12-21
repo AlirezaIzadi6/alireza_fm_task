@@ -26,19 +26,6 @@ from .rest_responses import RestHttpResponseSuccess, RestHttpResponseBadRequest,
 
 @login_required
 def index(request, path=''):
-    is_thumbnail_request = request.GET.get('thumbnail', False)
-    if is_thumbnail_request:
-        is_folder_thumbnail_request = request.GET.get('for_folder', False)
-        if is_folder_thumbnail_request:
-            file_path = 'file_manager/static_files/folder.jpg'
-        else:
-            resource = Resource(path)
-            file_path = get_file_path(THUMBNAILS_FOLDER, request.user.username, resource.path, resource.name)
-        file_content = read_file(file_path)
-        if file_content is None:
-            return HttpResponseNotFound('Not found')
-        response = HttpResponse(file_content, content_type='image/jpeg')
-        return response
     if not path_is_valid(path):
         return redirect('index')
     resource = Resource(path)
@@ -86,6 +73,24 @@ def index(request, path=''):
         return response
     else:
         return redirect('index')
+
+@login_required
+def get_folder_thumbnail(request):
+    file_path = 'file_manager/static_files/folder.jpg'
+    file_content = read_file(file_path)
+    response = HttpResponse(file_content, content_type='image/jpeg')
+    return response
+
+@login_required
+def get_file_thumbnail(request, id: int):
+    try:
+        file_object = MediaFile.objects.get(id=id, creator=request.user)
+        file_path = get_file_path(THUMBNAILS_FOLDER, request.user.username, file_object.path, file_object.name+'.jpg')
+        file_content = read_file(file_path)
+    except MediaFile.DoesNotExist:
+        return HttpResponseNotFound('Not found or not accessible')
+    response = HttpResponse(file_content, content_type='image/jpeg')
+    return response
 
 @login_required
 def upload(request):

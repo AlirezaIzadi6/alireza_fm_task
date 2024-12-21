@@ -36,7 +36,7 @@
             <tr>
                 <td>
                     <a href="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}">
-                        <img src="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}.jpg?thumbnail=true{% if item.type == None %}&for_folder=true{% endif %}" alt="thumbnail">
+                        <img src="{% if item.resource_type == 'folder' %}{% url 'get_folder_thumbnail' %}{% else %}{% url 'get_file_thumbnail' id=item.id %}{% endif %}" alt="thumbnail">
                     </a>
                 </td>
                 <td><button data-toggle="modal" data-target="#infoModal" data-id="{{ item.id }}" data-type="{% if item.type == None %}folder{% else %}file{% endif %}">{{ item.name }}</button></td>
