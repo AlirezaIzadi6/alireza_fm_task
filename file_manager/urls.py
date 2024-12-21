@@ -1,6 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import path
-from . import views
+from file_manager.views import views
 
 urlpatterns = [
     path('root/', views.index, name='index'),
