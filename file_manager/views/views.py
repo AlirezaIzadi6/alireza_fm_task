@@ -13,6 +13,8 @@ from file_manager.forms.create_folder import CreateFolderForm
 from file_manager.forms.upload import UploadForm
 # mappers
 from file_manager.mappers.path import Resource
+from file_manager.mappers.folder import get_folder_dto_for_index
+from file_manager.mappers.media_file import get_file_dto_for_index
 # models:
 from file_manager.models import Folder, MediaFile
 #utils:
@@ -20,7 +22,7 @@ from file_manager.utils.file_processor import *
 from file_manager.utils.file_validator import path_is_valid
 from file_manager.utils.formatting import format_folder_info, format_file_info
 from file_manager.utils.image_processor import create_image_thumbnail, create_video_thumbnail
-from file_manager.utils.path import extract_upper_folders, get_directory_path, get_file_path
+from file_manager.utils.path import extract_upper_folders, get_directory_path, get_file_path, split_path_and_name
 # views:
 from .rest_responses import RestHttpResponseSuccess, RestHttpResponseBadRequest, RestHttpResponseNotFound
 
@@ -28,51 +30,30 @@ from .rest_responses import RestHttpResponseSuccess, RestHttpResponseBadRequest,
 def index(request, path=''):
     if not path_is_valid(path):
         return redirect('index')
-    resource = Resource(path)
-    file_or_folder = get_file_or_folder(resource)
-    if path != '' and file_or_folder is None:
+    # Get path and name of the requested resource:
+    parent_path, name = split_path_and_name(path)
+    file_or_folder = get_file_or_folder(parent_path, name, request.user)
+    if file_or_folder is None:
         return redirect('index')
-    if path == '' or file_or_folder.resource_type == 'folder':
-        if path == '':
-            current_folder = None
-        else:
-            current_folder = file_or_folder.resource
+    if file_or_folder.resource_type == 'folder':
+        current_folder = file_or_folder.resource
         folders = Folder.objects.filter(path=path, creator=request.user)
         files = MediaFile.objects.filter(path=path, creator=request.user)
         upper_folders = extract_upper_folders(current_folder)
         data = []
         for f in folders:
-            new_item = {
-                'id': f.id,
-                'name': f.name,
-                'path': f.path,
-                'create_date': f.create_date,
-                'update_date': f.update_date,
-                'resource_type': 'folder',
-            }
+            new_item = get_folder_dto_for_index(f)
             data.append(new_item)
         for f in files:
-            new_item = {
-                'id': f.id,
-                'name': f.name,
-                'path': f.path,
-                'type': f.type,
-                'size': f.size,
-                'create_date': f.create_date,
-                'update_date': f.update_date,
-                'resource_type': 'file',
-            }
+            new_item = get_file_dto_for_index(f)
             data.append(new_item)
-        context = {'current_path': path, 'current_folder': resource.name, 'parent_folder': resource.path, 'data': data, 'upper_folders': upper_folders}
+        context = {'current_path': path, 'current_folder': name, 'parent_folder': parent_path, 'data': data, 'upper_folders': upper_folders}
         return render(request, 'index.html', context)
     elif file_or_folder.resource_type == 'file':
-        resource = Resource(path)
-        file_path = get_file_path(UPLOADS_FOLDER, request.user.username, resource.path, resource.name)
+        file_path = get_file_path(UPLOADS_FOLDER, request.user.username, parent_path, name)
         file_content = read_file(file_path)
         response = HttpResponse(file_content, content_type=file_or_folder.resource.type)
         return response
-    else:
-        return redirect('index')
 
 @login_required
 def get_folder_thumbnail(request):

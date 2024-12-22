@@ -9,15 +9,15 @@ def validate_upload_path(name, path):
     if os.path.isfile(created_path) or os.path.isdir(created_path):
         raise forms.ValidationError('Duplicate name')
 
-def path_is_valid(str):
-    if str == '':
+def path_is_valid(value: str):
+    if value == '':
         return True
-    if len(str) > 4000:
+    if len(value) > 4000:
         return False
     invalid_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
-    if re.match(str, invalid_name_regex):
+    if re.match(value, invalid_name_regex):
         return False
-    path_segments = str.split('/')[:]
+    path_segments = value.split('/')[:]
     for s in path_segments:
         if s == '':
             return False
