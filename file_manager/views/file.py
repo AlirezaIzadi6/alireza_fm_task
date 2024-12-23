@@ -13,7 +13,8 @@ from file_manager.models import MediaFile
 # utils:
 from file_manager.utils.file_processor import save_file, read_file, verify_directory_existance, delete_file
 from file_manager.utils.formatting import format_file_info
-from file_manager.utils.image_processor import create_image_thumbnail, create_video_thumbnail
+from file_manager.utils.media_tools.image_processor import create_image_thumbnail, get_image_dimensions
+from file_manager.utils.media_tools.video_processor import create_video_thumbnail, get_video_dimensions
 from file_manager.utils.path import get_file_path, get_directory_path
 # Views:
 from file_manager.views.rest_responses import *
@@ -32,15 +33,22 @@ def upload(request):
             save_path    = get_directory_path(UPLOADS_FOLDER, username, upload_path)
             save_file(file, save_path)
             thumbnail_path = get_directory_path(THUMBNAILS_FOLDER, username, upload_path)
+            file_path = save_path+'/'+file.name
             if 'image' in file.content_type:
+                width, height = get_image_dimensions(file_path)
+                length = 0
                 create_image_thumbnail(file.name, save_path, thumbnail_path)
             else:
+                length, height, width = get_video_dimensions(file_path)
                 create_video_thumbnail(file.name, save_path, thumbnail_path)
             MediaFile.objects.create(
                 name=file.name,
                 path=upload_path,
                 type=file.content_type,
                 size=file.size,
+                height=height,
+                width=width,
+                length=length,
                 parent_folder=parent_folder,
                 creator=request.user,
             )

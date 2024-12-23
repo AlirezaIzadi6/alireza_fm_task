@@ -5,7 +5,8 @@ from shutil import rmtree
 from django.forms import ValidationError
 
 from file_manager.utils.file_processor import save_file, verify_directory_existance
-from file_manager.utils.image_processor import is_valid_image, is_valid_video
+from file_manager.utils.media_tools.image_processor import is_valid_image
+from file_manager.utils.media_tools.video_processor import is_valid_video
 
 def validate_file_size(value):
     size_limit = 10*1024*1024
