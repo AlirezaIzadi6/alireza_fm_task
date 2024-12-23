@@ -1,6 +1,5 @@
 from django import forms
 
-from file_manager.models import UploadModel
 from file_manager.utils.path import get_directory_path
 from file_manager.validators.create_file import validate_file_name, validate_file_size, validate_file_type
 from file_manager.validators.path import validate_upload_path
