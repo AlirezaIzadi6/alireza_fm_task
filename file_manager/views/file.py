@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 # Constants:
 from file_manager.constants.directory import UPLOADS_FOLDER, THUMBNAILS_FOLDER
 # Data access:
-from file_manager.data_access.folder import get_folder_by_path
+from file_manager.data_access_helpers.folder import get_folder_by_path
 # forms:
 from file_manager.forms.upload import UploadForm
 #models:

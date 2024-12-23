@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect
 
 # Constants:
 from file_manager.constants.directory import UPLOADS_FOLDER
-# Data access:
-from file_manager.data_access.file_or_folder import get_file_or_folder
+# Data access helpers:
+from file_manager.data_access_helpers.file_or_folder import get_file_or_folder
 # Mappers:
 from file_manager.mappers.folder import get_folder_dto_for_index
 from file_manager.mappers.media_file import get_file_dto_for_index
