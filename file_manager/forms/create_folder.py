@@ -2,15 +2,9 @@ import os
 import re
 from django import forms
 
-from file_manager.utils.file_validator import validate_upload_path
+from file_manager.validators.create_folder import validate_folder_name
+from file_manager.validators.path import validate_upload_path
 from file_manager.utils.path import get_directory_path
-
-def validate_folder_name(value):
-    invalid_folder_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
-    if re.match(invalid_folder_name_regex, value) is None:
-        raise forms.ValidationError('Not allowed characters in folder name')
-    if len(value) > 255:
-        raise forms.ValidationError('Maximum folder name length exceded')
 
 class CreateFolderForm(forms.Form):
     def __init__(self, *args, **kwargs):

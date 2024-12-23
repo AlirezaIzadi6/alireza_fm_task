@@ -11,9 +11,10 @@ from file_manager.mappers.folder import get_folder_dto_for_index
 from file_manager.mappers.media_file import get_file_dto_for_index
 # Models:
 from file_manager.models import Folder, MediaFile
+# Validators:
+from file_manager.validators.path import path_is_valid
 #Utils:
 from file_manager.utils.file_processor import read_file
-from file_manager.utils.file_validator import path_is_valid
 from file_manager.utils.path import extract_upper_folders, split_path_and_name, get_file_path
 
 @login_required
