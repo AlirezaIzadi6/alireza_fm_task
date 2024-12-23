@@ -62,7 +62,7 @@
                         <h4 id="modal-title" class="modal-title">info</h4>
                     </div>
                     <div class="modal-body">
-                        <p id="modal-body">Some text in the modal.</p>
+                        <p id="modal-body"></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -77,8 +77,15 @@
                     var clickedButton = $(event.relatedTarget);
                     var resourceId = clickedButton.data('id');
                     var resourceType = clickedButton.data('type');
+                    var requestUrl = '';
+                    if (resourceType == 'folder') {
+                        requestUrl = "{% url 'get_folder_details' id=123456 %}";
+                    } else {
+                        requestUrl = "{% url 'get_file_details' id=123456 %}";
+                    }
+                    requestUrl = requestUrl.replace('123456', resourceId);
                     $.ajax({
-                        url: "{% url 'details' %}?id="+resourceId+"&type="+resourceType,
+                        url: requestUrl,
                         dataType: "json",
                         success: function(data) {
                             $('#modal-body').text('');
@@ -101,10 +108,11 @@
                     }
                     var requestUrl = '';
                     if (resourceType == 'folder') {
-                        requestUrl = "{% url 'delete_folder' %}";
+                        requestUrl = "{% url 'delete_folder' id=123456 %}";
                     } else {
-                        requestUrl = "{% url 'delete_file' %}";
+                        requestUrl = "{% url 'delete_file' id=123456 %}";
                     }
+                    requestUrl = requestUrl.replace('123456', resourceId);
                     $.ajax({
                         type: "post",
                         url: requestUrl,
