@@ -22,3 +22,10 @@ def path_is_valid(value: str):
         if s == '':
             return False
     return True
+
+def validate_file_name(filename: str):
+    invalid_file_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
+    if re.match(invalid_file_name_regex, filename) is None:
+        raise ValidationError('Not allowed characters in file name')
+    if len(filename) > 100:
+        raise ValidationError('Maximum file name length exceded')

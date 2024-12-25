@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,6 +8,7 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="{% static 'index.js' %}"></script>
     </head>
     <body>
         <h1>Welcome {{ user.username }}</h1>
@@ -33,19 +35,20 @@
                 <th>Actions</th>
             </tr>
             {% for item in data %}
-            <tr>
-                <td>
+            <tr id="item{{ item.id }}">
+                <td class="col-thumbnail">
                     <a href="{% url 'index' %}{% if item.path != '' %}{{ item.path }}/{% endif %}{{ item.name }}">
-                        <img src="{% if item.resource_type == 'folder' %}{% url 'get_folder_thumbnail' %}{% else %}{% url 'get_file_thumbnail' id=item.id %}{% endif %}" alt="thumbnail">
+                        <img src="{% if item.resource_type == 'folder' %}{% static 'folder.jpg' %}{% else %}{% url 'get_file_thumbnail' id=item.id %}{% endif %}" alt="thumbnail">
                     </a>
                 </td>
-                <td><button data-toggle="modal" data-target="#infoModal" data-id="{{ item.id }}" data-type="{% if item.type == None %}folder{% else %}file{% endif %}">{{ item.name }}</button></td>
-                <td>{{ item.size }}</td>
-                <td>{{ item.type }}</td>
-                <td>{{ item.create_date }}</td>
-                <td>{{ item.update_date }}</td>
-                <td>
-                    <button class="action-delete" data-id="{{ item.id }}" data-type="{{ item.resource_type }}">Delete</button></button>
+                <td class="col-name"><button data-toggle="modal" data-target="#infoModal" data-id="{{ item.id }}" data-type="{% if item.type == None %}folder{% else %}file{% endif %}">{{ item.name }}</button></td>
+                <td class="col-size">{{ item.size }}</td>
+                <td class="col-type">{{ item.type }}</td>
+                <td class="col-create-date">{{ item.create_date }}</td>
+                <td class="col-update-date">{{ item.update_date }}</td>
+                <td class="col-actions">
+                    <button type="button" class="action-rename" data-toggle="modal" data-target="#renameModal" data-id="{{ item.id }}" data-type="{{ item.resource_type }}" data-old-name="{{ item.name }}">Rename</button>
+                    <button type="button" class="action-delete" data-id="{{ item.id }}" data-type="{{ item.resource_type }}">Delete</button></button>
                 </td>
             </tr>
             {% endfor %}
@@ -59,10 +62,10 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
-                        <h4 id="modal-title" class="modal-title">info</h4>
+                        <h4 id="info-modal-title" class="modal-title">info</h4>
                     </div>
                     <div class="modal-body">
-                        <p id="modal-body"></p>
+                        <p id="info-modal-body"></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -70,62 +73,33 @@
                 </div>
             </div>
         </div>
+        <div id="renameModal" class="modal fade" tabindex="-1" aria-labelledby="Rename dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                        <h4 id="rename-modal-title" class="modal-title">Rename</h4>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="renameNewName" class="form-control" placeholder="Enter the new name:">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="renameButton">Rename</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <script>
-            $(document).ready(function() {
-                $('#infoModal').on('show.bs.modal', function(event) {
-                    var clickedButton = $(event.relatedTarget);
-                    var resourceId = clickedButton.data('id');
-                    var resourceType = clickedButton.data('type');
-                    var requestUrl = '';
-                    if (resourceType == 'folder') {
-                        requestUrl = "{% url 'get_folder_details' id=123456 %}";
-                    } else {
-                        requestUrl = "{% url 'get_file_details' id=123456 %}";
-                    }
-                    requestUrl = requestUrl.replace('123456', resourceId);
-                    $.ajax({
-                        url: requestUrl,
-                        dataType: "json",
-                        success: function(data) {
-                            $('#modal-body').text('');
-                            Object.keys(data).forEach(function(key) {
-                                var newP = document.createElement('p');
-                                newP.textContent = key+': '+data[key];
-                                $('#modal-body').append(newP);
-                            });
-                        }
-                    });
-                });
-
-                $('.action-delete').on('click', function(event) {
-                    var clickedButton = $(this);
-                    var resourceId = clickedButton.data('id');
-                    var resourceType = clickedButton.data('type');
-                    var isConfirmed = confirm(`Are you sure to delete this ${resourceType}?`);
-                    if (!isConfirmed) {
-                        return;
-                    }
-                    var requestUrl = '';
-                    if (resourceType == 'folder') {
-                        requestUrl = "{% url 'delete_folder' id=123456 %}";
-                    } else {
-                        requestUrl = "{% url 'delete_file' id=123456 %}";
-                    }
-                    requestUrl = requestUrl.replace('123456', resourceId);
-                    $.ajax({
-                        type: "post",
-                        url: requestUrl,
-                        data: {'id': resourceId, csrfmiddlewaretoken: "{{ csrf_token }}"},
-                        success: function(data) {
-                            window.location.href = "{% if current_path == '' %}{% url 'index' %}{% else %}{% url 'index' path=current_path %}{% endif %}";
-                        },
-                        error: function(data) {
-                            alert("An error occurred.");
-                        }
-                    });
-                })
-            });
+            var csrfToken = '{{ csrf_token }}';
+            var currentLocation = "{% if current_path == '' %}{% url 'index' %}{% else %}{% url 'index' path=current_path %}{% endif %}";
+            var getFolderDetailRequestUrl = "{% url 'get_folder_details' id=123456 %}";
+            var getFileDetailRequestUrl = "{% url 'get_file_details' id=123456 %}";
+            var renameFolderRequestUrl = "{% url 'rename_folder' id=123456 %}";
+            var renameFileRequestUrl = "{% url 'rename_file' id=123456 %}";
+            var deleteFolderRequestUrl = "{% url 'delete_folder' id=123456 %}";
+            var deleteFileRequestUrl = "{% url 'delete_file' id=123456 %}";
         </script>
     </body>
 </html>

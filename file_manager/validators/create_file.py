@@ -18,7 +18,7 @@ def validate_file_name(value):
     invalid_file_name_regex = r"^[^\0\/\:\*\?\"\<\>\|]+$"
     if re.match(invalid_file_name_regex, filename) is None:
         raise ValidationError('Not allowed characters in file name')
-    if len(filename) > 255:
+    if len(filename) > 100:
         raise ValidationError('Maximum file name length exceded')
 
 def validate_file_type(value):

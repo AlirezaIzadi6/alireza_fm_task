@@ -20,6 +20,11 @@ def read_file(path):
         file_content = f.read()
         return file_content
 
+def rename(path: str, old_name: str, new_name: str):
+    old_path = os.path.join(path, old_name)
+    new_path = os.path.join(path, new_name)
+    os.rename(old_path, new_path)
+
 def delete_file(path):
     try:
         os.remove(path)

@@ -73,6 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'alireza_fm_task.wsgi.application'
 
+STATIC_URL = '/static/'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
